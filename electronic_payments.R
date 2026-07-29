@@ -18,7 +18,7 @@ library(rjd3stl)
 
 # Input definitions 
 
-base_path                 <- "C:\\Users\\alessandro.piovani\\Desktop\\NTTS\\"
+base_path                 <- "C:\\Users\\alessandro.piovani\\Desktop\\NTTS_high_freq_daily\\"
 # base_path                 <- "C:\\Users\\UTENTE\\OneDrive - ISTAT\\Desktop\\NTTS"
 input_data_path           <- paste0(base_path,"\\Fatturazione_elettronica_e_fatturato_industria\\output_serie_storica_SUM.csv")
 monthly_SA_benchmark_path <- paste0(base_path,"\\Fatturazione_elettronica_e_fatturato_industria\\sa_new_fatturato_industria.csv")
