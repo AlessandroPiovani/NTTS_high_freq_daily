@@ -18,8 +18,8 @@ library(rjd3stl)
 
 # Input definitions 
 
-base_path                 <- "C:\\Users\\alessandro.piovani\\Desktop\\NTTS_high_freq_daily\\"
-# base_path                 <- "C:\\Users\\UTENTE\\OneDrive - ISTAT\\Desktop\\NTTS"
+# base_path                 <- "C:\\Users\\alessandro.piovani\\Desktop\\NTTS_high_freq_daily"
+base_path                 <- "C:\\Users\\UTENTE\\OneDrive - ISTAT\\Desktop\\NTTS_high_freq_daily"
 input_data_path           <- paste0(base_path,"\\Fabbisogno_elettrico_e_prod_industriale\\Electricity_Fabbisogno_Totale_Italia.csv")
 monthly_SA_benchmark_path <- paste0(base_path,"\\Fabbisogno_elettrico_e_prod_industriale\\sa_new_IndiciProduzioneIndustriale.csv")
 setwd(base_path)
@@ -228,18 +228,18 @@ colnames(cal_reg) <- c("Liberation Day", "Republic Day", "Immaculate Conception"
 
 ######################## estimated calendar effects
 
-pre_pro <- fractionalAirlineEstimation(
-  y = data$Value,
-  x = cal_reg,
-  log = log,
-  criticalValue = 6 ,
-  periods = c(7,365.2425), # weekly and yearly frequency
-  outliers = c("ao","wo", "ls"), y_time = data$Date) 
-
-print(pre_pro)
-
-par(blank_par)
-plot(pre_pro)
+# pre_pro <- fractionalAirlineEstimation(
+#   y = data$Value,
+#   x = cal_reg,
+#   log = log,
+#   criticalValue = 6 ,
+#   periods = c(7,365.2425), # weekly and yearly frequency
+#   outliers = c("ao","wo", "ls"), y_time = data$Date) 
+# 
+# print(pre_pro)
+# 
+# par(blank_par)
+# plot(pre_pro)
 
 
 
@@ -388,14 +388,17 @@ amb.doy <- rjd3highfreq::fractionalAirlineDecomposition(
   #log = log, # log data (if analysis performed in log scale) already produced by amb.dow$decomposition$sa
   y_time = data$Date)
 
-if (ls_presents) { # add LSs back
-  if(log)
-  {
-    amb.doy$decomposition$sa <- amb.doy$decomposition$sa * pre_pro$model$component_ls    
-  }  else
-  {
+if (ls_presents) {
+  if (log) {
+    # component_ls è un rapporto moltiplicativo in scala di livello (neutro = 1).
+    # sa è ancora in log-scale a questo punto (l'exp() finale arriva dopo),
+    # quindi si somma il LOG del rapporto: exp(sa + log(ls)) = exp(sa) * ls.
+    # log(component_ls) = 0 quando non c'è LS, quindi il caso "nessun LS" è
+    # automaticamente un no-op.
+    amb.doy$decomposition$sa <- amb.doy$decomposition$sa + log(pre_pro$model$component_ls)
+  } else {
     amb.doy$decomposition$sa <- amb.doy$decomposition$sa + pre_pro$model$component_ls
-  }  
+  }
 }
 
 par(blank_par)

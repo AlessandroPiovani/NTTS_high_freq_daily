@@ -258,7 +258,7 @@ if(aiccs[1] <= aiccs[2]) {
 aiccs[1]
 aiccs[2]
 
-log <- FALSE # Per forzare a non usare il log
+# log <- FALSE # Per forzare a non usare il log
 
 ################################################################################
 ########################## Pre-processing ######################################
@@ -301,19 +301,19 @@ cal_reg <- cbind(cal_reg, eom_regressors)
 
 ######################## estimated calendar effects
 
-pre_pro <- fractionalAirlineEstimation(
-  y = data$Value,
-  x = cal_reg,
-  log = log,
-  criticalValue = 6 ,
-  periods = c(7,365.2425), # weekly and yearly frequency
-  outliers = c("ao","wo", "ls"), y_time = data$Date) 
-
-print(pre_pro)
-
-par(blank_par)
-plot(pre_pro)
-
+# pre_pro <- fractionalAirlineEstimation(
+#   y = data$Value,
+#   x = cal_reg,
+#   log = log,
+#   criticalValue = 6 ,
+#   periods = c(7,365.2425), # weekly and yearly frequency
+#   outliers = c("ao","wo", "ls"), y_time = data$Date) 
+# 
+# print(pre_pro)
+# 
+# par(blank_par)
+# plot(pre_pro)
+# 
 
 
 ######################## pre-processing with time varying calendar effect
@@ -462,15 +462,17 @@ amb.doy <- rjd3highfreq::fractionalAirlineDecomposition(
   #log = log, # log data (if analysis performed in log scale) already produced by amb.dow$decomposition$sa
   y_time = data$Date)
 
-if (ls_presents) { # add LSs back
-  if(log)
-  {
-    amb.doy$decomposition$sa <- amb.doy$decomposition$sa * pre_pro$model$component_ls    
-  }  else
-  {
+if (ls_presents) {
+  if (log) {
+    # component_ls è un rapporto moltiplicativo in scala di livello (neutro = 1).
+    # sa è ancora in log-scale a questo punto (l'exp() finale arriva dopo),
+    # quindi si somma il LOG del rapporto: exp(sa + log(ls)) = exp(sa) * ls.
+    # log(component_ls) = 0 quando non c'è LS, quindi il caso "nessun LS" è
+    # automaticamente un no-op.
+    amb.doy$decomposition$sa <- amb.doy$decomposition$sa + log(pre_pro$model$component_ls)
+  } else {
     amb.doy$decomposition$sa <- amb.doy$decomposition$sa + pre_pro$model$component_ls
-  }  
-  
+  }
 }
 
 par(blank_par)

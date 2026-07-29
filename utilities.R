@@ -1565,13 +1565,14 @@ plot_sa_ca_comparison <- function(sa_vector,
                                   title,
                                   legend_label,
                                   log,
-                                  series = c("SA_CA", "SA")) {
+                                  series = c("SA_CA", "SA"),
+                                  cal_effect = data$Time_Varying) {  # <-- nuovo parametro, default = comportamento vecchio (tutti gli effetti, EoM incluso)
   
   series <- match.arg(series)
   
   # Serie da utilizzare
   plot_series <- if (series == "SA_CA") {
-    add_cal_eff(log, data$Time_Varying, sa_vector)
+    add_cal_eff(log, cal_effect, sa_vector)   # <-- usa il parametro invece di data$Time_Varying diretto
   } else {
     sa_vector
   }
@@ -1647,7 +1648,6 @@ plot_sa_ca_comparison <- function(sa_vector,
     cex = 1.1
   )
 }
-
 
 
 
