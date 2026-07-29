@@ -18,8 +18,8 @@ library(rjd3stl)
 
 # Input definitions 
 
-base_path                 <- "C:\\Users\\alessandro.piovani\\Desktop\\NTTS_high_freq_daily\\"
-# base_path                 <- "C:\\Users\\UTENTE\\OneDrive - ISTAT\\Desktop\\NTTS"
+# base_path                 <- "C:\\Users\\alessandro.piovani\\Desktop\\NTTS_high_freq_daily"
+base_path                 <- "C:\\Users\\UTENTE\\OneDrive - ISTAT\\Desktop\\NTTS_high_freq_daily"
 input_data_path           <- paste0(base_path,"\\Fatturazione_elettronica_e_fatturato_industria\\output_serie_storica_SUM.csv")
 monthly_SA_benchmark_path <- paste0(base_path,"\\Fatturazione_elettronica_e_fatturato_industria\\sa_new_fatturato_industria.csv")
 setwd(base_path)
@@ -57,6 +57,10 @@ data = data %>%
   dplyr::filter(Date >= as.Date(date_start))%>% 
   dplyr::filter(Date <= as.Date(date_end)) 
 
+
+print("Values <= 0, substituted with 1")
+print(sum(data$Value <= 0))
+data$Value[data$Value <= 0] <- 1
 
 ################################################################################
 ######################## Seasonality inspection ################################
