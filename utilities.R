@@ -1566,15 +1566,22 @@ plot_sa_ca_comparison <- function(sa_vector,
                                   legend_label,
                                   log,
                                   series = c("SA_CA", "SA"),
-                                  cal_effect = data$Time_Varying) {  # <-- nuovo parametro, default = comportamento vecchio (tutti gli effetti, EoM incluso)
+                                  cal_effect = data$Time_Varying) {
   
   series <- match.arg(series)
   
-  # Serie da utilizzare
+  # sa_vector (es. amb.doy$decomposition$sa) è già la serie con calendario E
+  # stagionalità rimossi (perché la pipeline a monte parte da una serie già
+  # calendar-adjusted). Quindi:
+  #  - "SA_CA" (Seasonally-Calendar Adjusted): è sa_vector così com'è, senza
+  #    aggiungere nulla — entrambi gli effetti sono già fuori.
+  #  - "SA" (solo Seasonally Adjusted): bisogna REINTRODURRE il calendario,
+  #    perché "SA" per definizione ha solo la stagionalità tolta, non il
+  #    calendario.
   plot_series <- if (series == "SA_CA") {
-    add_cal_eff(log, cal_effect, sa_vector)   # <-- usa il parametro invece di data$Time_Varying diretto
-  } else {
     sa_vector
+  } else {
+    add_cal_eff(log, cal_effect, sa_vector)
   }
   
   df <- data.frame(

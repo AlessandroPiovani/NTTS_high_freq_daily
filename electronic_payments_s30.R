@@ -708,8 +708,8 @@ plot_sa_ca_comparison(
   title        = "Sequential AMB",
   legend_label = "SA monthly (TRAMO-SEATS)",
   log = log,
-  #series = "SA" # per non avere i picchi stagionali
-  series = "SA_CA",
+  series = "SA",
+  # series = "SA_CA",  # per non avere i picchi stagionali
   cal_effect = data$Calendar_effect_holidays   # solo holiday, senza EoM
 )
 
@@ -743,8 +743,8 @@ sa_ca_monthly <- sa_outputs$sa_ca_monthly
 daily <- data.frame(
   Date = data$Date,
   Raw = data$Value,
-  SA = amb.doy$decomposition$sa,
-  SA_CA = amb.doy$decomposition$sa + data$Time_Varying
+  SA_CA = amb.doy$decomposition$sa,
+  SA    = amb.doy$decomposition$sa + data$Time_Varying
 )
 
 
@@ -759,24 +759,26 @@ raw_monthly <- data %>%
     Raw_monthly = mean(Value, na.rm = TRUE)
   )
 
-sa_monthly <- data.frame(
-  Date = data$Date,
-  SA = amb.doy$decomposition$sa
-) %>%
-  mutate(month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
-  summarise(
-    SA_monthly = mean(SA, na.rm = TRUE)
-  )
-
+# SA + calendario giornaliera aggregata mensilmente
 sa_ca_monthly <- data.frame(
   Date = data$Date,
-  SA_CA = amb.doy$decomposition$sa + data$Time_Varying
+  SA_CA = amb.doy$decomposition$sa
 ) %>%
   mutate(month = floor_date(Date, "month")) %>%
   group_by(month) %>%
   summarise(
     SA_CA_monthly = mean(SA_CA, na.rm = TRUE)
+  )
+
+# SA giornaliera aggregata mensilmente
+sa_monthly <- data.frame(
+  Date = data$Date,
+  SA = amb.doy$decomposition$sa + data$Time_Varying
+) %>%
+  mutate(month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(
+    SA_monthly = mean(SA, na.rm = TRUE)
   )
 
 rsa_monthly <- data.frame(

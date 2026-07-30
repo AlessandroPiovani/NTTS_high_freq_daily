@@ -555,10 +555,10 @@ par(blank_par)
 ############################# Revisions analysis ###############################
 ################################################################################
 
-
-amb_estimator2 <- AMBEstimator$new(data = data, dates_from_pre_pro = date_start, log_pre_pro = log)
-results_amb2 <- calculate_revisions_by_lags( estimator_instance = amb_estimator2)
-results_amb2
+# 
+# amb_estimator2 <- AMBEstimator$new(data = data, dates_from_pre_pro = date_start, log_pre_pro = log)
+# results_amb2 <- calculate_revisions_by_lags( estimator_instance = amb_estimator2)
+# results_amb2
 
 ################################################################################
 ######################### KDE analysis #########################################
@@ -623,7 +623,9 @@ plot_sa_ca_comparison(
   sa_column    = "TRAMO_SEATS",
   title        = "Sequential AMB",
   legend_label = "SA monthly (TRAMO-SEATS)",
-  log = log
+  log = log,
+  series = "SA" 
+  # series = "SA_CA" # per non avere i picchi stagionali
 )
 
 
@@ -653,8 +655,8 @@ sa_ca_monthly <- sa_outputs$sa_ca_monthly
 daily <- data.frame(
   Date = data$Date,
   Raw = data$Value,
-  SA = amb.doy$decomposition$sa,
-  SA_CA = amb.doy$decomposition$sa + data$Time_Varying
+  SA_CA = amb.doy$decomposition$sa,
+  SA    = amb.doy$decomposition$sa + data$Time_Varying
 )
 
 
@@ -671,27 +673,26 @@ raw_monthly <- data %>%
   )
 
 
-# SA giornaliera aggregata mensilmente
-sa_monthly <- data.frame(
-  Date = data$Date,
-  SA = amb.doy$decomposition$sa
-) %>%
-  mutate(month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
-  summarise(
-    SA_monthly = mean(SA, na.rm = TRUE)
-  )
-
-
 # SA + calendario giornaliera aggregata mensilmente
 sa_ca_monthly <- data.frame(
   Date = data$Date,
-  SA_CA = amb.doy$decomposition$sa + data$Time_Varying
+  SA_CA = amb.doy$decomposition$sa
 ) %>%
   mutate(month = floor_date(Date, "month")) %>%
   group_by(month) %>%
   summarise(
     SA_CA_monthly = mean(SA_CA, na.rm = TRUE)
+  )
+
+# SA giornaliera aggregata mensilmente
+sa_monthly <- data.frame(
+  Date = data$Date,
+  SA = amb.doy$decomposition$sa + data$Time_Varying
+) %>%
+  mutate(month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(
+    SA_monthly = mean(SA, na.rm = TRUE)
   )
 
 
@@ -731,7 +732,7 @@ write.xlsx(
 #                               Save workspace                                 #
 ################################################################################
 
-# save.image(file="workspace_electricity_demand_IT.RData")
+save.image(file="workspace_electricity_demand_IT.RData")
 
 
 
