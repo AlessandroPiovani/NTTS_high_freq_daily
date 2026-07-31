@@ -979,7 +979,7 @@ sa_all_methods <- function(res_monthly) {
 
 
 plot_kde_acf <- function(raw_data = NULL, sa_data = NULL, 
-                         lags = c(7, 365, 30), window_cycles = 2, 
+                         lags = c(7, 365, 30), window_cycles = c(4, 2, 3), 
                          title_label = NULL, show_legend = TRUE,
                          xlim_min = NULL, xlim_max = NULL,
                          ylim_min = NULL, ylim_max = NULL,
@@ -987,15 +987,16 @@ plot_kde_acf <- function(raw_data = NULL, sa_data = NULL,
   
   if (is.null(raw_data) & is.null(sa_data)) 
     stop("Provide at least one series (raw_data or sa_data).")
-  if (length(lags) > 3) # <--- Aggiornato controllo a massimo 3 lag
+  if (length(lags) > 3)
     stop("Provide at most three lags.")
+  if (length(window_cycles) != length(lags))                          # <-- NUOVO controllo
+    stop("`window_cycles` must have the same length as `lags`.")
   
   library(ggplot2)
   library(dplyr)
   library(stats)
   library(RColorBrewer)
   
-  # Internal function: compute ACF samples via rolling windows
   acf_samples <- function(x, lag, window_cycles) {
     window <- window_cycles * lag
     n <- length(x)
@@ -1017,8 +1018,10 @@ plot_kde_acf <- function(raw_data = NULL, sa_data = NULL,
   df_list <- list()
   
   if (!is.null(raw_data)) {
-    for (L in lags) {
-      acf_vals <- acf_samples(raw_data, L, window_cycles)
+    for (i in seq_along(lags)) {          # <-- CAMBIATO: for (L in lags)
+      L  <- lags[i]                       # <-- NUOVO
+      wc <- window_cycles[i]              # <-- NUOVO: finestra specifica per questo lag
+      acf_vals <- acf_samples(raw_data, L, wc)   # <-- CAMBIATO: wc invece di window_cycles
       if (length(acf_vals) > 0) {
         df_list[[paste0("raw_", L)]] <- data.frame(
           value = acf_vals,
@@ -1032,8 +1035,10 @@ plot_kde_acf <- function(raw_data = NULL, sa_data = NULL,
   }
   
   if (!is.null(sa_data)) {
-    for (L in lags) {
-      acf_vals <- acf_samples(sa_data, L, window_cycles)
+    for (i in seq_along(lags)) {          # <-- CAMBIATO: stesso schema del blocco raw
+      L  <- lags[i]
+      wc <- window_cycles[i]
+      acf_vals <- acf_samples(sa_data, L, wc)
       if (length(acf_vals) > 0) {
         df_list[[paste0("sa_", L)]] <- data.frame(
           value = acf_vals,
@@ -1046,15 +1051,14 @@ plot_kde_acf <- function(raw_data = NULL, sa_data = NULL,
     }
   }
   
+  # --- da qui in poi tutto invariato rispetto a prima ---
   df_all <- bind_rows(df_list)
   if (nrow(df_all) == 0) 
     stop("No valid ACF values available to plot. Try reducing 'window_cycles' or using smaller lags.")
   
-  # Assicuriamo che l'ordine dei livelli rispetti l'input dei lag dell'utente
   df_all$lag <- factor(df_all$lag, levels = paste0("Lag ", lags))
   lag_levels <- max(3, length(unique(df_all$lag)))
   
-  # Gestione dinamica dei colori (Default vs Custom)
   if (!is.null(custom_colors)) {
     if (length(custom_colors) < length(unique(df_all$lag))) {
       warning("I colori personalizzati forniti sono inferiori al numero di Lag nel grafico. Uso il default.")
@@ -1063,24 +1067,19 @@ plot_kde_acf <- function(raw_data = NULL, sa_data = NULL,
       colors <- custom_colors[1:length(unique(df_all$lag))]
     }
   } else {
-    # Default con Set1: 1° Rosso, 2° Blu, 3° Arancione
     colors <- RColorBrewer::brewer.pal(lag_levels, "Set1")[1:length(unique(df_all$lag))]
   }
   names(colors) <- levels(df_all$lag)[1:length(unique(df_all$lag))]
   
-  # Title
   if (!is.null(title_label)) {
     title_lab <- title_label
   } else {
-    title_lab <- "Kernel density of sample ACF values"
+    title_lab <- "KDE of rolling sample ACF"
   }
   
-  # Plot
   p <- ggplot(df_all, aes(x = value, color = lag, linetype = type)) +
-    # gray band first (background)
     annotate("rect", xmin = -0.025, xmax = 0.025, ymin = 0, ymax = Inf,
              fill = "grey80", alpha = 0.4) +
-    # density lines (on top)
     geom_density(linewidth = 1.1) +
     scale_color_manual(values = colors) +
     scale_linetype_manual(values = c("Raw data" = "solid",
@@ -1098,14 +1097,13 @@ plot_kde_acf <- function(raw_data = NULL, sa_data = NULL,
       legend.title = element_text(face = "bold"),
       plot.title = element_text(face = "bold")
     ) +
-    # coordinate limits
     coord_cartesian(xlim = c(xlim_min, xlim_max),
                     ylim = c(ylim_min, ylim_max))
   
-  # hide legend if requested
   if (!show_legend) p <- p + theme(legend.position = "none")
   return(p)
 }
+
 
 
 

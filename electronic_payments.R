@@ -227,7 +227,7 @@ ts_raw_data <- with(data[order(data$Date), ],
 xlim_range <- c(-0.5, 0.5) # adjust them basing on the plot ranges of these data
 ylim_range <- c(0, 7.5)
 
-KDE_raw   <- plot_kde_acf(raw_data = ts_raw_data, lags = c(7, 30, 365), window_cycles =  2, xlim_min = xlim_range[1], xlim_max = xlim_range[2], ylim_min = ylim_range[1], ylim_max = ylim_range[2], show_legend = TRUE, title_label = "KDE of sample ACF for raw data")
+KDE_raw   <- plot_kde_acf(raw_data = ts_raw_data, lags = c(7, 30, 365), window_cycles =  c(4,3,2), xlim_min = xlim_range[1], xlim_max = xlim_range[2], ylim_min = ylim_range[1], ylim_max = ylim_range[2], show_legend = TRUE, title_label = "KDE of rolling ACF for raw data")
 KDE_raw
 
 
@@ -666,10 +666,10 @@ ylim_range <- c(0, 7.5)
 # KDE_AMB_seq   <- plot_kde_acf(raw_data = ts_raw_data, sa_data = ts_sa_AMB_seq  , lags = c(7, 30,365), window_cycles =  2, xlim_min = xlim_range[1], xlim_max = xlim_range[2], ylim_min = ylim_range[1], ylim_max = ylim_range[2], show_legend = TRUE, title_label = "KDE of sample ACF for AMB sequential")
 # KDE_AMB_seq
 
-KDE_AMB_seq_7_365   <- plot_kde_acf(raw_data = ts_raw_data, sa_data = ts_sa_AMB_seq  , lags = c(7, 365), window_cycles =  2, xlim_min = xlim_range[1], xlim_max = xlim_range[2], ylim_min = ylim_range[1], ylim_max = ylim_range[2], show_legend = TRUE, title_label = "KDE of sample ACF for AMB sequential")
+KDE_AMB_seq_7_365   <- plot_kde_acf(raw_data = ts_raw_data, sa_data = ts_sa_AMB_seq  , lags = c(7, 365), window_cycles =  c(4,2), xlim_min = xlim_range[1], xlim_max = xlim_range[2], ylim_min = ylim_range[1], ylim_max = ylim_range[2], show_legend = TRUE, title_label = "KDE of rolling ACF for AMB sequential")
 KDE_AMB_seq_7_365
 
-KDE_AMB_seq_30   <- plot_kde_acf(raw_data = ts_raw_data, sa_data = ts_sa_AMB_seq  , lags = c(30), window_cycles =  2, xlim_min = xlim_range[1], xlim_max = xlim_range[2], ylim_min = ylim_range[1], ylim_max = ylim_range[2], show_legend = TRUE, title_label = "KDE of sample ACF for AMB sequential")
+KDE_AMB_seq_30   <- plot_kde_acf(raw_data = ts_raw_data, sa_data = ts_sa_AMB_seq  , lags = c(30), window_cycles =  c(3), xlim_min = xlim_range[1], xlim_max = xlim_range[2], ylim_min = ylim_range[1], ylim_max = ylim_range[2], show_legend = TRUE, title_label = "KDE of rolling ACF for AMB sequential")
 KDE_AMB_seq_30
 ################################################################################
 ######################### MONTHLY SA_CA COMPARISON  ############################
