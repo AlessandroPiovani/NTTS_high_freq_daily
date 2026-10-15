@@ -35,8 +35,8 @@ source("utilities.R")
 source("revision.R")
 source("stability.R")
 
-label          <- "Electronic payments"
-label_original <- "Electronic payments"
+label          <- "Electronic invoicing (taxable amount, €)"
+label_original <- "Electronic invoicing (taxable amount, €)"
 lab <- label
 date_start <- "2019-01-01"
 date_end   <- "2025-12-31"
@@ -739,7 +739,9 @@ daily <- data.frame(
   Date = data$Date,
   Raw = data$Value,
   SA_CA = amb.doy$decomposition$sa,
-  SA = amb.doy$decomposition$sa + data$Time_Varying
+  #SA = amb.doy$decomposition$sa + data$Time_Varying
+  SA = if (log) amb.doy$decomposition$sa * data$Time_Varying else amb.doy$decomposition$sa + data$Time_Varying
+  
 )
 
 
@@ -769,7 +771,7 @@ sa_ca_monthly <- data.frame(
 # SA giornaliera aggregata mensilmente
 sa_monthly <- data.frame(
   Date = data$Date,
-  SA = amb.doy$decomposition$sa + data$Time_Varying
+  SA = if (log) amb.doy$decomposition$sa * data$Time_Varying else amb.doy$decomposition$sa + data$Time_Varying #SA = amb.doy$decomposition$sa + data$Time_Varying
 ) %>%
   mutate(month = floor_date(Date, "month")) %>%
   group_by(month) %>%
@@ -817,5 +819,12 @@ write.xlsx(
 save.image(file="workspace_electronic_payments_LOG_SUM.RData")
 
 
+# Per dimostrare che il regressore EoM è meglio se differenziato fra DOmenica e altri giorni
+daily$ratio <- daily$SA / daily$SA_CA
+eom <- daily[day(daily$Date) == days_in_month(daily$Date), ]
+eom$dow <- weekdays(eom$Date)
+stats::aggregate(ratio ~ dow, data = eom, FUN = median)
 
+kruskal.test(ratio ~ dow, data = eom)
+wilcox.test(eom$ratio[eom$dow == "Sunday"], eom$ratio[eom$dow != "Sunday"])
 

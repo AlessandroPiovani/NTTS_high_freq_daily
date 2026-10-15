@@ -1107,8 +1107,6 @@ plot_kde_acf <- function(raw_data = NULL, sa_data = NULL,
 
 
 
-
-
 analyze_spectral_peaks <- function(x, is_spectrum = FALSE, max_peaks = 15) {
   library(dplyr)
   
@@ -1264,8 +1262,7 @@ exponentiate_components <- function(sa_result) {
 
 compute_si_daily <- function(log=TRUE, s7, i, dates) {
   
-  # browser()
-  
+
   # Check lunghezze
   if(!(length(s7) == length(i) & length(i) == length(dates))) {
     stop("s7, i and dates must have the same length")
@@ -1331,6 +1328,141 @@ compute_si_daily <- function(log=TRUE, s7, i, dates) {
   )
 }
 
+# Old: smaller writings
+# plot_si_weekly <- function(dates, si, 
+#                            s7 = NA,
+#                            main = NA, 
+#                            log_ratio = FALSE,
+#                            y_min = NA,
+#                            y_max = NA,
+#                            show = c("points","boxplot"),
+#                            plot_y_lab=TRUE) {
+#   # browser()
+#   show <- match.arg(show)
+#   
+#   # Controlli
+#   dates <- as.Date(dates)
+#   if (length(dates) != length(si)) stop("dates and si must have the same length")
+#   
+#   # Log ratio con gestione valori <= 0
+#   if(log_ratio) {
+#     min_si <- min(si)
+#     if(min_si <= 0) {
+#       offset <- abs(min_si) + 1e-6
+#       si <- si + offset
+#       message("S–I values adjusted by offset = ", round(offset,6), " to compute log")
+#     }
+#     si <- log(si)
+#     
+#     if(is.na(main))
+#     {  
+#       main <- "Log S–I Plot (Weekly)"
+#     }  
+#   } else{
+#     if(is.na(main))
+#     { 
+#        main<-"S–I Plot (Weekly)"
+#     }   
+#   }
+#   
+#   # Giorno della settimana
+#   dow <- factor(weekdays(dates),
+#                 levels = c("Monday","Tuesday","Wednesday","Thursday","Friday",
+#                            "Saturday","Sunday"))
+#   
+#   # Calcolo media
+#   mean_dow <- tapply(si, dow, mean)
+#   
+#   # Colori
+#   col_bg <- "white"
+#     col_lines <- rgb(0.8, 0.8, 0.8)
+#     
+#     # Impostazioni grafiche
+#     #op <- par(no.readonly=TRUE)
+#     #on.exit(par(op))
+#     
+#     if(plot_y_lab==FALSE)
+#     {
+#       par(bg = col_bg, mar = c(2.5,2,1.5,0.5))
+#     }else
+#     {
+#       par(bg = col_bg, mar = c(4,4,4,2))
+#     }  
+#         
+#     # Mapping 1..7
+#     x_numeric <- as.numeric(dow)
+#     
+#     if(plot_y_lab)
+#     {  
+#       if(log_ratio){
+#         label_y <- "log(S–I)"
+#       }else{
+#         label_y <- "S–I"
+#       }  
+#     }else{
+#       label_y <- ""
+#     }
+#       
+#     
+#     # Plot vuoto con limiti y opzionali
+#     plot(x_numeric, si, type="n", xaxt="n", xlab="", 
+#          ylab = label_y,
+#          main=main, xlim=c(0.5, 7.5),
+#          ylim = if(is.na(y_min) || is.na(y_max)) NULL else c(y_min, y_max))
+#     
+#     # Linee verticali
+#     for (k in 0:7) abline(v = k + 0.5, col = col_lines)
+#     
+#     # --- Visualizzazione dei dati ---
+#     if(show == "points") {
+#       # Punti
+#       points(x_numeric, si, pch=20, cex=0.7)
+#     } else if(show == "boxplot") {
+#       # Boxplot per ciascun giorno della settimana
+#       boxplot(si ~ dow, add = TRUE, axes = FALSE,
+#               col = rgb(0,0,1,0.2), border = rgb(0,0,1),
+#               at = 1:7, width = rep(0.6, 7))
+#     }
+#     
+#     # Smoothed LOESS o stagionalità per ogni giorno
+#     for(day in levels(dow)) {
+#       idx <- which(dow == day)
+#       ord <- order(dates[idx])
+#       
+#       y_vals <- si[idx][ord]
+#       x_time <- as.numeric(dates[idx][ord])
+#       
+#       
+#       if(length(s7)==1 && is.na(s7))# if s7 is not available, use a LOESS
+#       {
+#         fit <- stats::loess(y_vals ~ x_time, span = 0.3)
+#         y_smooth <- predict(fit, x_time) 
+#       }else  
+#       {
+#         y_smooth <- s7[idx][ord]  # seasonal component passed as input
+#       }
+#       
+# 
+#       n <- length(idx)
+#       x_local <- seq(-0.3, 0.3, length.out = n)
+#       
+#       day_col <- which(levels(dow) == day)
+#       x_plot <- day_col + x_local
+#       
+#       lines(x_plot, y_smooth, col="blue", lwd=2)
+#     }
+#     
+#     # Segmenti medi rossi
+#     for (k in 1:7) {
+#       y_mean <- mean_dow[k]
+#       segments(k - 0.4, y_mean, k + 0.4, y_mean, col="red", lwd=1)
+#     }
+#     
+#     # Etichette asse X
+#     axis(1, at=1:7, labels=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"))
+# }
+
+# New: bigger writings
 plot_si_weekly <- function(dates, si, 
                            s7 = NA,
                            main = NA, 
@@ -1363,7 +1495,7 @@ plot_si_weekly <- function(dates, si,
   } else{
     if(is.na(main))
     { 
-       main<-"S–I Plot (Weekly)"
+      main<-"S–I Plot (Weekly)"
     }   
   }
   
@@ -1377,93 +1509,105 @@ plot_si_weekly <- function(dates, si,
   
   # Colori
   col_bg <- "white"
-    col_lines <- rgb(0.8, 0.8, 0.8)
-    
-    # Impostazioni grafiche
-    #op <- par(no.readonly=TRUE)
-    #on.exit(par(op))
-    
-    if(plot_y_lab==FALSE)
-    {
-      par(bg = col_bg, mar = c(2.5,2,1.5,0.5))
-    }else
-    {
-      par(bg = col_bg, mar = c(4,4,4,2))
-    }  
-        
-    # Mapping 1..7
-    x_numeric <- as.numeric(dow)
-    
-    if(plot_y_lab)
-    {  
-      if(log_ratio){
-        label_y <- "log(S–I)"
-      }else{
-        label_y <- "S–I"
-      }  
+  col_lines <- rgb(0.8, 0.8, 0.8)
+  
+  # Impostazioni grafiche
+  #op <- par(no.readonly=TRUE)
+  #on.exit(par(op))
+  
+  # FIX: margini allargati per fare spazio a testo piu' grande
+  # (bottom aumentato per i nomi giorni, top aumentato per il nome del pannello)
+  if(plot_y_lab==FALSE)
+  {
+    par(bg = col_bg, mar = c(4,3,3.5,0.5))
+  }else
+  {
+    par(bg = col_bg, mar = c(5,5,4,2))
+  }  
+  
+  # Mapping 1..7
+  x_numeric <- as.numeric(dow)
+  
+  if(plot_y_lab)
+  {  
+    if(log_ratio){
+      label_y <- "log(S–I)"
     }else{
-      label_y <- ""
-    }
-      
+      label_y <- "S–I"
+    }  
+  }else{
+    label_y <- ""
+  }
+  
+  
+  # Plot vuoto con limiti y opzionali
+  # FIX: cex.main ingrandito (e' il nome del pannello, es. "AMB seq"),
+  # cex.lab e cex.axis aggiunti esplicitamente (prima assenti, default a 1)
+  plot(x_numeric, si, type="n", xaxt="n", xlab="", 
+       ylab = label_y,
+       main=main, xlim=c(0.5, 7.5),
+       ylim = if(is.na(y_min) || is.na(y_max)) NULL else c(y_min, y_max),
+       cex.main = 2.0, cex.lab = 1.7, cex.axis = 1.6)
+  
+  # Linee verticali
+  for (k in 0:7) abline(v = k + 0.5, col = col_lines)
+  
+  # --- Visualizzazione dei dati ---
+  if(show == "points") {
+    # Punti
+    points(x_numeric, si, pch=20, cex=0.7)
+  } else if(show == "boxplot") {
+    # Boxplot per ciascun giorno della settimana
+    boxplot(si ~ dow, add = TRUE, axes = FALSE,
+            col = rgb(0,0,1,0.2), border = rgb(0,0,1),
+            at = 1:7, width = rep(0.6, 7))
+  }
+  
+  # Smoothed LOESS o stagionalità per ogni giorno
+  for(day in levels(dow)) {
+    idx <- which(dow == day)
+    ord <- order(dates[idx])
     
-    # Plot vuoto con limiti y opzionali
-    plot(x_numeric, si, type="n", xaxt="n", xlab="", 
-         ylab = label_y,
-         main=main, xlim=c(0.5, 7.5),
-         ylim = if(is.na(y_min) || is.na(y_max)) NULL else c(y_min, y_max))
+    y_vals <- si[idx][ord]
+    x_time <- as.numeric(dates[idx][ord])
     
-    # Linee verticali
-    for (k in 0:7) abline(v = k + 0.5, col = col_lines)
     
-    # --- Visualizzazione dei dati ---
-    if(show == "points") {
-      # Punti
-      points(x_numeric, si, pch=20, cex=0.7)
-    } else if(show == "boxplot") {
-      # Boxplot per ciascun giorno della settimana
-      boxplot(si ~ dow, add = TRUE, axes = FALSE,
-              col = rgb(0,0,1,0.2), border = rgb(0,0,1),
-              at = 1:7, width = rep(0.6, 7))
-    }
-    
-    # Smoothed LOESS o stagionalità per ogni giorno
-    for(day in levels(dow)) {
-      idx <- which(dow == day)
-      ord <- order(dates[idx])
-      
-      y_vals <- si[idx][ord]
-      x_time <- as.numeric(dates[idx][ord])
-      
-      
-      if(length(s7)==1 && is.na(s7))# if s7 is not available, use a LOESS
-      {
-        fit <- stats::loess(y_vals ~ x_time, span = 0.3)
-        y_smooth <- predict(fit, x_time) 
-      }else  
-      {
-        y_smooth <- s7[idx][ord]  # seasonal component passed as input
-      }
-      
-
-      n <- length(idx)
-      x_local <- seq(-0.3, 0.3, length.out = n)
-      
-      day_col <- which(levels(dow) == day)
-      x_plot <- day_col + x_local
-      
-      lines(x_plot, y_smooth, col="blue", lwd=2)
+    if(length(s7)==1 && is.na(s7))# if s7 is not available, use a LOESS
+    {
+      fit <- stats::loess(y_vals ~ x_time, span = 0.3)
+      y_smooth <- predict(fit, x_time) 
+    }else  
+    {
+      y_smooth <- s7[idx][ord]  # seasonal component passed as input
     }
     
-    # Segmenti medi rossi
-    for (k in 1:7) {
-      y_mean <- mean_dow[k]
-      segments(k - 0.4, y_mean, k + 0.4, y_mean, col="red", lwd=1)
-    }
+    n <- length(idx)
+    x_local <- seq(-0.3, 0.3, length.out = n)
     
-    # Etichette asse X
-    axis(1, at=1:7, labels=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"))
+    day_col <- which(levels(dow) == day)
+    x_plot <- day_col + x_local
+    
+    lines(x_plot, y_smooth, col="blue", lwd=2)
+  }
+  
+  # Segmenti medi rossi
+  for (k in 1:7) {
+    y_mean <- mean_dow[k]
+    segments(k - 0.4, y_mean, k + 0.4, y_mean, col="red", lwd=1)
+  }
+  
+  # Etichette asse X -- FIX: cex.axis aggiunto (era assente, default a 1)
+  axis(1, at=1:7, labels=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"), cex.axis = 1.6)
 }
 
+
+
+# Filtra un data.frame su una colonna data tra start e end (inclusi)
+filter_range <- function(df, date_col, start, end) {
+  df %>%
+    dplyr::filter(.data[[date_col]] >= as.Date(start),
+                  .data[[date_col]] <= as.Date(end))
+}
 
 
 # --- FUNZIONE PER I PANNELLI ---
@@ -1528,27 +1672,6 @@ plot_hist_panel <- function(irr_data_raw, irr_data_std, title_text) {
     font.main = 2,
     cex.main = 1.8
   )
-}
-
-
-# ---------------------------------------------------------------------------
-# Funzioni di supporto
-# ---------------------------------------------------------------------------
-
-# Applica l'aggiustamento per l'effetto calendario (moltiplicativo o additivo)
-add_cal_eff <- function(log, time_varying_cal_eff, data) {
-  if (log) {
-    data * time_varying_cal_eff
-  } else {
-    data + time_varying_cal_eff
-  }
-}
-
-# Filtra un data.frame su una colonna data tra start e end (inclusi)
-filter_range <- function(df, date_col, start, end) {
-  df %>%
-    dplyr::filter(.data[[date_col]] >= as.Date(start),
-                  .data[[date_col]] <= as.Date(end))
 }
 
 
@@ -1652,6 +1775,15 @@ plot_sa_ca_comparison <- function(sa_vector,
     bty = "n",
     cex = 1.1
   )
+}
+
+# Applica l'aggiustamento per l'effetto calendario (moltiplicativo o additivo)
+add_cal_eff <- function(log, time_varying_cal_eff, data) {
+  if (log) {
+    data * time_varying_cal_eff
+  } else {
+    data + time_varying_cal_eff
+  }
 }
 
 
