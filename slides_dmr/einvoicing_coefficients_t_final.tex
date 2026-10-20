@@ -1,0 +1,64 @@
+\documentclass[10pt]{article}
+\usepackage[paperwidth=19cm,paperheight=14cm,margin=0.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[scaled=0.92]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{booktabs,multirow,array}
+\pagestyle{empty}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.12}
+\newcommand{\m}{$-$}
+\begin{document}
+\small
+\noindent
+\begin{minipage}[t]{0.37\textwidth}
+\textbf{A. National holidays}\\[3pt]
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}l r r@{}}
+\toprule
+ & Coef. & \textit{t} \\
+\midrule
+New Year's Day        & \m1.327 & \m16.3 \\
+Epiphany              & \m2.070 & \m26.3 \\
+Easter Sunday$^{\dagger}$ & \m0.394 & \m6.4 \\
+Easter Monday         & \m2.376 & \m38.7 \\
+Liberation Day        & \m2.176 & \m26.4 \\
+Labour Day            & \m1.518 & \m18.7 \\
+Republic Day          & \m1.908 & \m23.1 \\
+Assumption of Mary    & \m1.160 & \m14.2 \\
+All Saints' Day       & \m1.609 & \m19.4 \\
+Immaculate Conception & \m1.843 & \m22.4 \\
+Christmas             & \m3.168 & \m38.0 \\
+St.\ Stephen's Day    & \m2.771 & \m31.3 \\
+\bottomrule
+\end{tabular*}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.585\textwidth}
+\textbf{B. Month end and fixed days, by day type}\\[3pt]
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}l r r r@{}}
+\toprule
+\textit{Coef.\ (t)} & Weekday & Saturday & Sunday \\
+\midrule
+EoM                 & 2.150 (71.0) & 3.388 (64.1) & 4.229 (85.3) \\
+EoM\m1              & 0.367 (11.9) & 1.809 (37.0) & -- \\
+EoM\m2              & 0.284 (9.4) & -- & \multirow{4}{*}{\m0.204 (\m7.6)$^{*}$} \\
+EoM\m3              & 0.282 (9.8) & -- & \\
+EoM\m4              & 0.195 (6.9) & -- & \\
+EoM\m5              & 0.123 (4.5) & -- & \\
+\addlinespace[2pt]
+Day 1               & 0.341 (11.2) & 0.648 (13.3) & 1.351 (26.5) \\
+Day 15              & 0.312 (12.9) & 0.755 (16.2) & 1.269 (26.1) \\
+Day 20              & 0.148 (6.3) & 0.221 (4.9) & 0.252 (5.4) \\
+\addlinespace[2pt]
+Last working day$^{\ddagger}$ & 0.748 (20.6) & -- & -- \\
+\bottomrule
+\end{tabular*}
+\end{minipage}
+
+\vspace{8pt}
+\noindent\begin{minipage}{\textwidth}
+\footnotesize
+Notes: pre-treatment estimates on the log scale; \textit{t}-statistics in the second column of panel A and in parentheses in panel B; the multiplicative effect is exp(coefficient). All coefficients are significant \mbox{(\textbar\textit{t}\textbar~$>$~4)}. EoM: last day of the month; EoM\m\textit{k}: \textit{k} days before. Holidays enter only when they fall on a working day. Effects in panel B are relative to a normal day of the same type. -- not included (not significant).
+\mbox{$^{\dagger}$~Relative} to a normal Sunday. \mbox{$^{*}$~Single} regressor for Sundays falling 2 to 5 days before the month end. \mbox{$^{\ddagger}$~Friday} before a month end falling on a weekend; added to the EoM\m1 or EoM\m2 weekday effect.
+\end{minipage}
+\end{document}
