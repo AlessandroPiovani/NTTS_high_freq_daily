@@ -1,0 +1,63 @@
+\documentclass[10pt]{article}
+\usepackage[paperwidth=19cm,paperheight=14cm,margin=0.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[scaled=0.92]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{booktabs,multirow,array}
+\pagestyle{empty}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.12}
+\newcommand{\m}{$-$}
+\begin{document}
+\small
+\noindent
+\begin{minipage}[t]{0.36\textwidth}
+\textbf{A. Model parameters}\\[3pt]
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}l r r@{}}
+\toprule
+ & Coef. & \textit{t} \\
+\midrule
+MA(1)                         & \m0.707 & \m82.6 \\
+Seasonal MA, period 7         & 0.869 & 81.2 \\
+Seasonal MA, period 365.24    & 0.889 & 150.0 \\
+\midrule
+\multicolumn{3}{@{}l@{}}{Observations: 5{,}114 (2012--2025)} \\
+\multicolumn{3}{@{}l@{}}{Model: additive} \\
+\multicolumn{3}{@{}l@{}}{Calendar: 23 time-varying regressors,} \\
+\multicolumn{3}{@{}l@{}}{\quad removed in a first step} \\
+\multicolumn{3}{@{}l@{}}{Outliers: 15 (critical value 6)} \\
+\bottomrule
+\end{tabular*}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.6\textwidth}
+\textbf{B. Outliers}\\[3pt]
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}l l r r l@{}}
+\toprule
+Type & Date & Coef. & \textit{t} & Event \\
+\midrule
+LS & 15/06/2014 & \m51.4  & \m10.0 & Summer temperature \\
+LS & 01/09/2014 & 41.6    & 8.1    & Summer temperature \\
+AO & 21/08/2015 & \m71.4  & \m6.5  & To be checked \\
+LS & 29/08/2016 & 32.0    & 6.4    & Summer temperature \\
+LS & 15/03/2020 & \m131.9 & \m24.1 & Covid-19 lockdown \\
+LS & 25/04/2020 & 68.5    & 12.4   & Covid-19 reopening \\
+LS & 27/07/2020 & 66.8    & 13.2   & Covid-19 reopening \\
+LS & 22/08/2022 & \m42.4  & \m8.4  & Energy crisis \\
+LS & 10/07/2023 & 75.2    & 10.8   & Summer temperature \\
+LS & 26/07/2023 & \m94.1  & \m12.1 & Summer temperature \\
+LS & 19/08/2023 & 53.2    & 8.5    & Summer temperature \\
+LS & 09/07/2024 & 79.3    & 15.0   & Summer temperature \\
+LS & 10/09/2024 & \m61.7  & \m11.7 & Summer temperature \\
+LS & 04/06/2025 & 55.5    & 9.6    & Summer temperature \\
+LS & 08/07/2025 & \m45.8  & \m7.8  & Summer temperature \\
+\bottomrule
+\end{tabular*}
+\end{minipage}
+
+\vspace{8pt}
+\noindent\begin{minipage}{\textwidth}
+\footnotesize
+Notes: pre-treatment of the calendar-adjusted series (additive model, fractional airline with periods 7 and 365.2425); outlier coefficients in thousand MWh. Calendar effects are estimated in a first step with time-varying coefficients (random walks with a common variance) and removed before the outlier search. LS: level shift; AO: additive outlier. Summer temperature: level shifts, mostly in pairs of opposite sign, from temperature effects on cooling demand that are not modelled.
+\end{minipage}
+\end{document}

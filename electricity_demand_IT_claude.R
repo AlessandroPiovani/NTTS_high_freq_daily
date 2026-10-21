@@ -227,8 +227,8 @@ library(rjd3sts)
 library(rjd3x11plus)
 library(rjd3stl)
 
-# base_path                 <- "C:\\Users\\alessandro.piovani\\Desktop\\NTTS_high_freq_daily"
-base_path                 <- "C:\\Users\\UTENTE\\OneDrive - ISTAT\\Desktop\\NTTS_high_freq_daily"
+base_path                 <- "C:\\Users\\alessandro.piovani\\Desktop\\github_repo\\NTTS_high_freq_daily"
+# base_path                 <- "C:\\Users\\UTENTE\\OneDrive - ISTAT\\Desktop\\NTTS_high_freq_daily"
 input_data_path           <- paste0(base_path,"\\Fabbisogno_elettrico_e_prod_industriale\\Electricity_Fabbisogno_Totale_Italia.csv")
 monthly_SA_benchmark_path <- paste0(base_path,"\\Fabbisogno_elettrico_e_prod_industriale\\sa_new_IndiciProduzioneIndustriale.csv")
 setwd(base_path)
@@ -1009,3 +1009,105 @@ if (!joint_calendar) {
 write.xlsx(export_list, file = "seasonal_adjustment_outputs_Electricity_IT.xlsx", overwrite = TRUE)
 
 save.image(file = "workspace_electricity_demand_IT.RData")
+
+
+
+
+
+
+
+
+################################## FIGURE ######################################
+
+################################################################################
+#                                                                              #
+#   DOMANDA ELETTRICA - FIGURE DEGLI EFFETTI DI CALENDARIO VARIABILI           #
+#                                                                              #
+################################################################################
+# Da incollare in CODA allo script finale dell'elettricità (o subito dopo il
+# PASSO 5): usa i coefficienti già stimati nel PASSO 5 (ss, cal_reg), quindi
+# nessuna nuova stima e figure coerenti con il modello usato per la SA.
+# Richiede joint_calendar = FALSE e il file calendar_tools.R nella cartella
+# di lavoro (per plot_calendar_figure_a4).
+#
+# Figure prodotte (PNG 300 dpi + PDF vettoriale) nella cartella fig_dir:
+#   electricity_tv_all        tre pannelli uno sotto l'altro (pagina A4)
+#   electricity_tv_holidays   festività nazionali
+#   electricity_tv_bridges    ponti e giorni di semi-chiusura
+#   electricity_tv_other      sabato festivo, festività infrasettimanali,
+#                             finestra di Pasqua
+# Stessa grafica delle figure del turismo e delle nascite.
+################################################################################
+
+source("calendar_tools.R")
+
+stopifnot(!joint_calendar, exists("ss"), exists("cal_reg"))
+
+fig_dir <- "figures_electricity"
+dir.create(fig_dir, showWarnings = FALSE)
+
+# ------------------------------------------------------------------------------
+# 1) Coefficienti variabili dal PASSO 5, nel formato di plot_calendar_figure_a4
+#    (i regressori sono le ultime ncol(cal_reg) colonne degli stati)
+# ------------------------------------------------------------------------------
+reg_idx <- (ncol(ss) - ncol(cal_reg) + 1):ncol(ss)
+stopifnot(identical(as.integer(reg_idx), as.integer(cal_idx)))   # stesso indice del PASSO 5
+
+tv_el <- list(beta = ss[, reg_idx, drop = FALSE])
+colnames(tv_el$beta) <- colnames(cal_reg)
+
+# ------------------------------------------------------------------------------
+# 2) Gruppi di regressori (un pannello per gruppo)
+# ------------------------------------------------------------------------------
+grp_el_holidays <- c("New Year's Day", "Epiphany", "Easter Sunday", "Easter Monday",
+                     "Liberation Day", "Labour Day", "Republic Day", "Assumption of Mary",
+                     "All Saints' Day", "Immaculate Conception", "Christmas", "St. Stephen's Day")
+grp_el_bridges  <- c("Bridge_Mon", "Bridge_Fri", "Christmas_Eve_Wkd", "New_Years_Eve_Wkd",
+                     "Assumption_Adjacent_Wkd", "Christmas_Period_Wkd")
+grp_el_other    <- c("Holiday_Sat", "Holiday_Midweek", "Good_Friday", "Holy_Saturday", "Easter_Tuesday")
+
+# Controllo: ogni regressore del modello è in uno e un solo gruppo
+stopifnot(setequal(c(grp_el_holidays, grp_el_bridges, grp_el_other), colnames(cal_reg)),
+          !anyDuplicated(c(grp_el_holidays, grp_el_bridges, grp_el_other)))
+
+# ------------------------------------------------------------------------------
+# 3) Figura unica con i tre pannelli (pagina A4 del paper)
+# ------------------------------------------------------------------------------
+plot_calendar_figure_a4(
+  data$Date, tv_el, groups = list(grp_el_holidays, grp_el_bridges, grp_el_other), log = log,
+  units = "thousand MWh", divide_by = 1000,
+  main = "Electricity demand: time-varying calendar effects",
+  leg_cols = c(3, 2, 3), width_cm = 16, height_cm = 22,
+  file_stub = file.path(fig_dir, "electricity_tv_all"))
+
+# ------------------------------------------------------------------------------
+# 4) Figure singole, una per gruppo, ciascuna con il suo titolo
+# ------------------------------------------------------------------------------
+single_figs <- list(
+  list(vars = grp_el_holidays, cols = 3, stub = "electricity_tv_holidays",
+       main = "Electricity demand: national holidays"),
+  list(vars = grp_el_bridges,  cols = 2, stub = "electricity_tv_bridges",
+       main = "Electricity demand: bridges and semi-closure days"),
+  list(vars = grp_el_other,    cols = 3, stub = "electricity_tv_other",
+       main = "Electricity demand: Saturday and midweek holidays, Easter window"))
+
+for (f in single_figs) {
+  plot_calendar_figure_a4(
+    data$Date, tv_el, groups = list(f$vars), log = log,
+    units = "thousand MWh", divide_by = 1000,
+    main = f$main, leg_cols = f$cols, width_cm = 16, height_cm = 10,
+    file_stub = file.path(fig_dir, f$stub))
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
