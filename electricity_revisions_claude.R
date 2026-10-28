@@ -15,8 +15,8 @@ source("electricity_demand_IT_claude.R")
 # sequenziale (7, poi 365.2425):
 #
 #                                 coefficienti fissi     coefficienti variabili
-#   calendario base (12 fest.)          A                        D
-#   calendario finale (23 regr.)        B                        C  <- scelta attuale
+#   calendario base (12 fest.)          A                        C
+#   calendario finale (23 regr.)        B                        D  <- scelta attuale
 #
 #   - calendario base: 12 festività attive in tutti i giorni (type = "All");
 #   - coefficienti fissi: calendario nel pre-trattamento (x di
@@ -25,8 +25,8 @@ source("electricity_demand_IT_claude.R")
 #     settimanale + regressori a passeggiata casuale) e tolto dalla serie,
 #     poi pre-trattamento solo per gli outlier (come pre_processing() di
 #     revision.R).
-#   A vs B e D vs C: effetto del contenuto del calendario.
-#   A vs D e B vs C: effetto dei coefficienti variabili.
+#   A vs B e C vs D: effetto del contenuto del calendario.
+#   A vs C e B vs D: effetto dei coefficienti variabili.
 #
 # Revisioni: le stesse di default di calculate_revisions_by_lags()
 # (lags = 7, 30, 90, 181, 365, 730; stesse misure MR, MAR, RMAR, SD, RMSR,
@@ -210,15 +210,27 @@ revisions_by_lags_cal <- function(estimator_instance, lags = lags_rev,
 # ------------------------------------------------------------------------------
 # 4) Le quattro versioni (risultati salvati e riletti se già presenti)
 # ------------------------------------------------------------------------------
+# Ordine: prima i coefficienti fissi (A, B), poi quelli variabili (C, D);
+# D = specificazione adottata (calendario finale, coefficienti variabili).
+# I file .rds hanno un nome descrittivo, indipendente dalla lettera.
 versions <- list(
-  A = list(label = "A: basic, fixed",          cal = cal_basic, tv = FALSE),
-  B = list(label = "B: final, fixed",          cal = cal_final, tv = FALSE),
-  C = list(label = "C: final, time-varying",   cal = cal_final, tv = TRUE),
-  D = list(label = "D: basic, time-varying",   cal = cal_basic, tv = TRUE))
+  A = list(label = "A: basic, fixed",          cal = cal_basic, tv = FALSE, id = "basic_fixed"),
+  B = list(label = "B: final, fixed",          cal = cal_final, tv = FALSE, id = "final_fixed"),
+  C = list(label = "C: basic, time-varying",   cal = cal_basic, tv = TRUE,  id = "basic_tv"),
+  D = list(label = "D: final, time-varying",   cal = cal_final, tv = TRUE,  id = "final_tv"))
+
+# Migrazione dai vecchi nomi (revisions_A..D.rds, con C = finale variabile e
+# D = base variabile): rinomina i file già calcolati, senza ristimare
+old_ids <- c(A = "basic_fixed", B = "final_fixed", C = "final_tv", D = "basic_tv")
+for (o in names(old_ids)) {
+  f_old <- file.path(rev_dir, paste0("revisions_", o, ".rds"))
+  f_new <- file.path(rev_dir, paste0("revisions_", old_ids[[o]], ".rds"))
+  if (file.exists(f_old) && !file.exists(f_new)) file.rename(f_old, f_new)
+}
 
 rev_res <- list()
 for (v in names(versions)) {
-  f <- file.path(rev_dir, paste0("revisions_", v, ".rds"))
+  f <- file.path(rev_dir, paste0("revisions_", versions[[v]]$id, ".rds"))
   if (file.exists(f)) {
     cat("Version", v, ": read from", f, "\n")
     rev_res[[v]] <- readRDS(f)
@@ -297,10 +309,11 @@ write.csv(tab_outl_stab, file.path(rev_dir, "outlier_configurations.csv"), row.n
 # ------------------------------------------------------------------------------
 # 6) Figure (PNG + PDF)
 # ------------------------------------------------------------------------------
+# stessi colori di prima per ciascuna specificazione (cambia solo la lettera)
 ver_cols <- c("A: basic, fixed" = "#E69F00", "B: final, fixed" = "#56B4E9",
-              "C: final, time-varying" = "#0072B2", "D: basic, time-varying" = "#D55E00")
+              "C: basic, time-varying" = "#D55E00", "D: final, time-varying" = "#0072B2")
 ver_lty  <- c("A: basic, fixed" = 2, "B: final, fixed" = 2,
-              "C: final, time-varying" = 1, "D: basic, time-varying" = 1)
+              "C: basic, time-varying" = 1, "D: final, time-varying" = 1)
 
 save_rev <- function(p, name, w = 16, h = 9) {
   ggsave(file.path(rev_dir, paste0(name, ".png")), p, width = w, height = h, units = "cm", dpi = 300)
@@ -331,7 +344,9 @@ p <- ggplot(rec_long, aes(lag_values, RMAR, colour = version, linetype = version
   scale_x_continuous(breaks = lags_rev, trans = "log10") +
   scale_colour_manual(values = ver_cols) + scale_linetype_manual(values = ver_lty) +
   labs(x = "Lag (days, log scale)", y = "Mean absolute revision, last year of vintage (%)") +
-  guides(colour = guide_legend(nrow = 2)) + theme_rev
-save_rev(p, "revisions_recent_special_vs_normal", h = 10)
+  guides(colour = guide_legend(nrow = 2)) + theme_rev +
+  # più spazio: etichetta y intera, pannelli staccati ("730" e "7" non si toccano)
+  theme(panel.spacing.x = unit(0.8, "cm"), plot.margin = margin(5, 10, 15, 5))
+save_rev(p, "revisions_recent_special_vs_normal", h = 11)
 
 save.image(file = file.path(rev_dir, "workspace_revisions_electricity.RData"))
